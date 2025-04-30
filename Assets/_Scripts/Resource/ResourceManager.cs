@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ResourceManager : MonoBehaviour
+public class ResourceManager : Singleton<ResourceManager>
 {
     [SerializeField] Transform plane;
     [SerializeField] GameObject test_ore;
@@ -21,12 +21,20 @@ public class ResourceManager : MonoBehaviour
 
         for (int i = 0; i < 10; i++)
         {
-            Vector3 resource_pos = PlaneRandomPos();
-            if (!Physics.CheckSphere(resource_pos, 0.5f, resourceMask))
-            {
-                GenNewResource(resource_pos);
-            }
+            GenNewResource();
         }
+    }
+
+    public void GenNewResource()
+    {
+        Vector3 resource_pos = PlaneRandomPos();
+        if (Physics.CheckSphere(resource_pos, 0.5f, resourceMask)) return;
+
+        Bounds ore_bound = test_ore.GetComponent<Collider>().bounds;
+        float ore_height = (ore_bound.max.y - ore_bound.min.y) / 2;
+        resource_pos.y += ore_height;
+
+        Instantiate(test_ore, resource_pos, Quaternion.identity);
     }
 
     private Vector3 PlaneRandomPos()
@@ -36,14 +44,5 @@ public class ResourceManager : MonoBehaviour
 
         Vector3 randomLocalPosition = new Vector3(randomX, 0f, randomZ);
         return plane.TransformPoint(randomLocalPosition);
-    }
-
-    public void GenNewResource(Vector3 resource_pos)
-    {
-        Bounds ore_bound = test_ore.GetComponent<Collider>().bounds;
-        float ore_height = (ore_bound.max.y - ore_bound.min.y) / 2;
-        resource_pos.y += ore_height;
-
-        Instantiate(test_ore, resource_pos, Quaternion.identity);
     }
 }
